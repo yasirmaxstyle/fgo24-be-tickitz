@@ -1,6 +1,9 @@
-FROM golang:alpine as build
+FROM golang:alpine AS build
 
 WORKDIR /buildapp
+
+COPY go.mod go.sum ./
+RUN go mod download
 
 COPY . .
 
@@ -11,5 +14,6 @@ FROM alpine:3.22
 WORKDIR /app
 
 COPY --from=build /buildapp/noir /app/noir
+RUN chmod +x /app/noir
 
-ENTRYPOINT [ "/app/noir" ]
+ENTRYPOINT ["/app/noir"]
