@@ -39,11 +39,13 @@ jobs:
           port: 9501
           script: |
             cd /home/yasir/be-noir
-            docker compose pull app
-            docker compose up -d --build
+            docker compose pull ghcr.io/yasirmaxstyle/fgo24-be-tickitz:latest
+            docker compose up -d postgres redis
             docker run --rm \
-              -v $(pwd)/migrations:/migrations \
+              -v "$PWD/migrations:/migrations" \
               migrate/migrate \
               -path=/migrations \
-              -database "postgres://postgres:1@localhost:5432/noir?sslmode=disable" up
+              -database "postgres://postgres:1@localhost:5432/noir?sslmode=disable" \
+              up
+            docker compose up -d --build app
 
