@@ -32,7 +32,7 @@ const docTemplate = `{
                 "summary": "Add new movie",
                 "parameters": [
                     {
-                        "description": "Create movie request",
+                        "description": "Create movie",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -63,7 +63,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/movie/:id": {
+        "/admin/movie/{id}": {
             "delete": {
                 "security": [
                     {
@@ -81,8 +81,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Delete movie request",
-                        "name": "id_movie",
+                        "description": "Delete movie",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -124,7 +124,7 @@ const docTemplate = `{
                 "summary": "Update existing movie",
                 "parameters": [
                     {
-                        "description": "Update movie request",
+                        "description": "Update movie",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -135,7 +135,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Update movie request",
-                        "name": "id_movie",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -249,6 +249,57 @@ const docTemplate = `{
                         "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "Logout user by blacklisting refresh token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout user",
+                "parameters": [
+                    {
+                        "description": "Logout request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -385,52 +436,6 @@ const docTemplate = `{
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/models.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/profile/logout": {
-            "post": {
-                "description": "Logout user by blacklisting refresh token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "profile"
-                ],
-                "summary": "Logout user",
-                "parameters": [
-                    {
-                        "description": "Logout request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.RefreshTokenRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
                         }
                     }
                 }

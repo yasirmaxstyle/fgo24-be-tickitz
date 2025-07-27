@@ -133,7 +133,7 @@ paths:
     post:
       description: Add new movie by admin
       parameters:
-      - description: Create movie request
+      - description: Create movie
         in: body
         name: request
         required: true
@@ -159,13 +159,13 @@ paths:
       summary: Add new movie
       tags:
       - admin
-  /admin/movie/:id:
+  /admin/movie/{id}:
     delete:
       description: Delete existing movie by admin
       parameters:
-      - description: Delete movie request
+      - description: Delete movie
         in: path
-        name: id_movie
+        name: id
         required: true
         type: integer
       produces:
@@ -191,7 +191,7 @@ paths:
     patch:
       description: Add existing movie by admin
       parameters:
-      - description: Update movie request
+      - description: Update movie
         in: body
         name: request
         required: true
@@ -199,7 +199,7 @@ paths:
           $ref: '#/definitions/models.UpdateMovieRequest'
       - description: Update movie request
         in: path
-        name: id_movie
+        name: id
         required: true
         type: integer
       produces:
@@ -280,6 +280,38 @@ paths:
           schema:
             $ref: '#/definitions/models.HTTPError'
       summary: Login user
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout user by blacklisting refresh token
+      parameters:
+      - description: Logout request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Token: []
+      summary: Logout user
       tags:
       - auth
   /auth/register:
@@ -368,36 +400,6 @@ paths:
       security:
       - Token: []
       summary: Get user profile
-      tags:
-      - profile
-  /profile/logout:
-    post:
-      consumes:
-      - application/json
-      description: Logout user by blacklisting refresh token
-      parameters:
-      - description: Logout request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/models.RefreshTokenRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Logout user
       tags:
       - profile
 securityDefinitions:

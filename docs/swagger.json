@@ -25,7 +25,7 @@
                 "summary": "Add new movie",
                 "parameters": [
                     {
-                        "description": "Create movie request",
+                        "description": "Create movie",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -56,7 +56,7 @@
                 }
             }
         },
-        "/admin/movie/:id": {
+        "/admin/movie/{id}": {
             "delete": {
                 "security": [
                     {
@@ -74,8 +74,8 @@
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Delete movie request",
-                        "name": "id_movie",
+                        "description": "Delete movie",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -117,7 +117,7 @@
                 "summary": "Update existing movie",
                 "parameters": [
                     {
-                        "description": "Update movie request",
+                        "description": "Update movie",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -128,7 +128,7 @@
                     {
                         "type": "integer",
                         "description": "Update movie request",
-                        "name": "id_movie",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -242,6 +242,57 @@
                         "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "Logout user by blacklisting refresh token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout user",
+                "parameters": [
+                    {
+                        "description": "Logout request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -378,52 +429,6 @@
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/models.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/profile/logout": {
-            "post": {
-                "description": "Logout user by blacklisting refresh token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "profile"
-                ],
-                "summary": "Logout user",
-                "parameters": [
-                    {
-                        "description": "Logout request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.RefreshTokenRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
                         }
                     }
                 }
