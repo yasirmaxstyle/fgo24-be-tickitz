@@ -47,8 +47,10 @@ jobs:
           port: 9501
           script: |
             cd /home/yasir/be-noir
+            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
             docker pull ghcr.io/yasirmaxstyle/fgo24-be-tickitz:latest
             docker compose up -d postgres redis
+            sleep 15
             docker run --rm \
               --network be-noir_netapp \
               -v "$PWD/migrations:/migrations" \
