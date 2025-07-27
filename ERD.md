@@ -81,6 +81,7 @@ direction LR
     cinemas{
         int cinema_id PK
         string name
+        string image_path
         string location
         int total_seats
         string address
@@ -91,7 +92,7 @@ direction LR
     payment_method{
         int payment_method_id PK
         string name
-        string code "EWALLET, BANK_TRANSFER"
+        string code "EWALLET, BANK_TRANSFER, CREDIT_CARD"
         boolean is_active
         timestamp created_at
     }
@@ -104,7 +105,6 @@ direction LR
         string overview
         int duration "in minutes"
         date release_date
-        string rating "G, PG, PG-13, R"
         int director_id FK
         timestamp created_at
     }
