@@ -2,93 +2,71 @@ package controllers
 
 import (
 	"net/http"
-	"noir-backend/models"
+	"noir-backend/dto"
+	"noir-backend/services"
+	"noir-backend/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
-func CreateTransaction(c *gin.Context) {
-	var req models.CreateTransactionRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		models.NewError(c, http.StatusBadRequest, err.Error())
+type TransactionController struct {
+	transactionService *services.TransactionService
+}
+
+func NewTransactionController(transactionService *services.TransactionService) *TransactionController {
+	return &TransactionController{transactionService: transactionService}
+}
+
+func (c *TransactionController) CreateTransaction(ctx *gin.Context) {
+	var req dto.CreateTransactionRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		utils.SendError(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	userID, exists := c.Get("user_id")
+	userID, exists := ctx.Get("user_id")
 	if !exists {
-		models.NewError(c, http.StatusUnauthorized, "user not aunthenticated")
+		utils.SendError(ctx, http.StatusUnauthorized, "user not aunthenticated")
 		return
 	}
 
-	response, err := models.CreateTransaction(req, userID.(int))
+	response, err := c.transactionService.CreateTransaction(ctx.Request.Context(), req, userID.(int))
 	if err != nil {
-		models.NewError(c, http.StatusBadRequest, err.Error())
+		utils.SendError(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, models.APIResponse{
-		Success: true,
-		Message: "Transaction created successfully",
-		Data:    response,
-	})
+	utils.SendSuccess(ctx, http.StatusCreated, "Transaction created successfully", response)
 }
 
-func ProcessPayment(c *gin.Context) {
-	var req models.ProcessPaymentRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		models.NewError(c, http.StatusBadRequest, err.Error())
+func (c *TransactionController) ProcessPayment(ctx *gin.Context) {
+	var req dto.ProcessPaymentRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		utils.SendError(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	response, err := models.ProcessPayment(req)
+	response, err := c.transactionService.ProcessPayment(ctx.Request.Context(), req)
 	if err != nil {
-		models.NewError(c, http.StatusBadRequest, err.Error())
+		utils.SendError(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, models.APIResponse{
-		Success: true,
-		Message: "Payment processed successfully",
-		Data:    response,
-	})
+	utils.SendSuccess(ctx, http.StatusOK, "Payment processed successfully", response)
 }
 
-func CancelTransaction(c *gin.Context) {
-	transactionCode := c.Param("code")
+func (c *TransactionController) GetTransaction(ctx *gin.Context) {
+	transactionCode := ctx.Param("code")
 	if transactionCode == "" {
-		models.NewError(c, http.StatusBadRequest, "transaction code is required")
+		utils.SendError(ctx, http.StatusBadRequest, "transaction code is required")
 		return
 	}
 
-	response, err := models.CancelTransaction(transactionCode)
+	response, err := c.transactionService.GetTransactionByCode(ctx.Request.Context(), transactionCode)
 	if err != nil {
-		models.NewError(c, http.StatusBadRequest, err.Error())
+		utils.SendError(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, models.APIResponse{
-		Success: true,
-		Message: "Transaction cancelled successfully",
-		Data:    response,
-	})
-}
-
-func GetTransaction(c *gin.Context) {
-	transactionCode := c.Param("code")
-	if transactionCode == "" {
-		models.NewError(c, http.StatusBadRequest, "transaction code is required")
-		return
-	}
-
-	response, err := models.GetTransactionByCode(transactionCode)
-	if err != nil {
-		models.NewError(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	c.JSON(http.StatusOK, models.APIResponse{
-		Success: true,
-		Message: "Transaction retrieved successfully",
-		Data:    response,
-	})
+	utils.SendSuccess(ctx, http.StatusOK, "Transaction retrieved successfully", response)
 }
