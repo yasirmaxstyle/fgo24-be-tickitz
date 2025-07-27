@@ -1,17 +1,18 @@
 package router
 
 import (
-	"noir-backend/controllers"
+	"noir-backend/container"
 	"noir-backend/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
-func authRouter(r *gin.RouterGroup) {
-	r.POST("/register", controllers.Register)
-	r.POST("/login", controllers.Login)
-	r.POST("/forgot-password", controllers.ForgotPassword)
-	r.POST("/reset-password", controllers.ResetPassword)
+func authRouter(r *gin.RouterGroup, c *container.Container) {
+	r.POST("/register", c.AuthController.Register)
+	r.POST("/login", c.AuthController.Login)
+	r.POST("/forgot-password", c.AuthController.ForgotPassword)
+	r.POST("/reset-password", c.AuthController.ResetPassword)
+
 	r.Use(middleware.AuthMiddleware())
-	r.POST("/logout", controllers.Logout)
+	r.POST("/logout", c.AuthController.Logout)
 }
