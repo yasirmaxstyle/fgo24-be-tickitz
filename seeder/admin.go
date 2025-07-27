@@ -44,7 +44,7 @@ func SeedAdminUser(db *pgxpool.Pool) {
 	var userID int
 
 	err = tx.QueryRow(context.Background(), `
-		INSERT INTO users (email, password_hash, role)
+		INSERT INTO users (email, password, role)
 		VALUES ($1, $2, 'admin')
 		RETURNING user_id`,
 		adminEmail, hashedPassword).
