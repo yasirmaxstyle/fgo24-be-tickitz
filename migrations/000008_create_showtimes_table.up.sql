@@ -1,0 +1,9 @@
+CREATE TABLE showtimes (
+    id SERIAL PRIMARY KEY,
+    movie_id INTEGER NOT NULL REFERENCES movies (id) ON DELETE CASCADE,
+    cinema_id INTEGER NOT NULL REFERENCES cinemas (id) ON DELETE CASCADE,
+    show_datetime TIMESTAMP NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    available_seats INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
