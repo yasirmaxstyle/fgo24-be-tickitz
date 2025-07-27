@@ -1,0 +1,45 @@
+name: Push Image to GHCR
+run-name: release Image GHCR
+
+on:
+  push:
+    branches:
+      - master
+    
+jobs:
+  push-image-to-ghcr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Build and publish a Docker image to GHCR
+        uses: macbre/push-to-ghcr@master
+        with:
+          image_name: ${{ github.repository }}
+          github_token: ${{ secrets.GHCR_PAT }}
+          image_tag: latest
+      
+      - name: Copy migrations to VPS
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          port: 9501
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "migrations"
+          target: "/home/yasir/be-noir"
+        
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 9501
+          script: |
+            cd /home/yasir/be-noir
+            docker compose pull app
+            docker compose up -d --build
+            make migration_up
+
