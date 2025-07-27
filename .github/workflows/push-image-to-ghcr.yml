@@ -41,5 +41,9 @@ jobs:
             cd /home/yasir/be-noir
             docker compose pull app
             docker compose up -d --build
-            make migration_up
+            docker run --rm \
+              -v $(pwd)/migrations:/migrations \
+              migrate/migrate \
+              -path=/migrations \
+              -database "postgres://postgres:1@localhost:5432/noir?sslmode=disable" up
 
