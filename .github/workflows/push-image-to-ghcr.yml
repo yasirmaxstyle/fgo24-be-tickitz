@@ -39,7 +39,7 @@ jobs:
           port: 9501
           script: |
             cd /home/yasir/be-noir
-            docker compose pull ghcr.io/yasirmaxstyle/fgo24-be-tickitz:latest
+            docker pull ghcr.io/yasirmaxstyle/fgo24-be-tickitz:latest
             docker compose up -d postgres redis
             docker run --rm \
               --network be-noir_netapp \
