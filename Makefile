@@ -1,7 +1,14 @@
-include .env
+ifneq (,$(wildcard .env))
+    include .env
+    export
+endif
 
-MIGRATE=migrate -source file://./migrations \
-	-database postgres://$(DB_NAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable up
+MIGRATION_DIR?=./migrations
+
+MIGRATE=migrate -source file://$(MIGRATION_DIR) -database "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSLMODE)"
+
+migration_create:
+	migrate create -seq -dir $(MIGRATION_DIR) -ext sql $(name)
 
 migration_up:
 	$(MIGRATE) up
