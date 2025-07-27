@@ -2,10 +2,20 @@ package controllers
 
 import (
 	"net/http"
-	"noir-backend/models"
+	"noir-backend/dto"
+	"noir-backend/services"
+	"noir-backend/utils"
 
 	"github.com/gin-gonic/gin"
 )
+
+type AuthController struct {
+	authService *services.AuthService
+}
+
+func NewAuthController(authService *services.AuthService) *AuthController {
+	return &AuthController{authService: authService}
+}
 
 // Register godoc
 // @Summary Register a new user
@@ -14,33 +24,29 @@ import (
 // @Accept json
 // @Produce json
 // @Param request body models.RegisterRequest true "Registration request"
-// @Success 201 {object} models.APIResponse
-// @Failure 400 {object} models.HTTPError
-// @Failure 500 {object} models.HTTPError
+// @Success 201 {object} dto.SuccessResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
 // @Router /auth/register [post]
-func Register(c *gin.Context) {
-	var req models.RegisterRequest
-	if err := c.ShouldBind(&req); err != nil {
-		models.NewError(c, http.StatusBadRequest, err.Error())
+func (c *AuthController) Register(ctx *gin.Context) {
+	var req dto.RegisterRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		utils.SendError(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if req.Password != req.ConfirmPassword {
-		models.NewError(c, http.StatusBadRequest, "confirm password must match")
+		utils.SendError(ctx, http.StatusBadRequest, "confirm password must match")
 		return
 	}
 
-	user, err := models.CreateUser(req)
+	user, err := c.authService.Register(ctx.Request.Context(), req)
 	if err != nil {
-		models.NewError(c, http.StatusInternalServerError, "failed to create user")
+		utils.SendError(ctx, http.StatusInternalServerError, "failed to create user")
 		return
 	}
 
-	c.JSON(http.StatusCreated, models.APIResponse{
-		Success: true,
-		Message: "user registered successfully",
-		Data:    user,
-	})
+	utils.SendSuccess(ctx, http.StatusCreated, "user registered successfully", user)
 }
 
 // Login godoc
@@ -50,24 +56,24 @@ func Register(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body models.LoginRequest true "Login request"
-// @Success 200 {object} models.AuthResponse
-// @Failure 400 {object} models.HTTPError
-// @Failure 401 {object} models.HTTPError
+// @Success 200 {object} dto.AuthResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
 // @Router /auth/login [post]
-func Login(c *gin.Context) {
-	var req models.LoginRequest
-	if err := c.ShouldBind(&req); err != nil {
-		models.NewError(c, http.StatusUnauthorized, err.Error())
+func (c *AuthController) Login(ctx *gin.Context) {
+	var req dto.LoginRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		utils.SendError(ctx, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	response, err := models.Login(&req)
+	response, err := c.authService.Login(ctx.Request.Context(), &req)
 	if err != nil {
-		models.NewError(c, http.StatusUnauthorized, err.Error())
+		utils.SendError(ctx, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, response)
+	utils.SendSuccess(ctx, http.StatusOK, "login successful", response)
 }
 
 // GetProfile godoc
@@ -77,23 +83,23 @@ func Login(c *gin.Context) {
 // @Produce json
 // @Security Token
 // @Success 200 {object} models.User
-// @Failure 401 {object} models.HTTPError
-// @Failure 404 {object} models.HTTPError
+// @Failure 401 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
 // @Router /profile [get]
-func GetProfile(c *gin.Context) {
-	userID, exists := c.Get("user_id")
+func (c *AuthController) GetProfile(ctx *gin.Context) {
+	userID, exists := ctx.Get("user_id")
 	if !exists {
-		models.NewError(c, http.StatusUnauthorized, "Status Unauthorized")
+		utils.SendError(ctx, http.StatusUnauthorized, "Status Unauthorized")
 		return
 	}
 
-	user, err := models.GetUserByID(userID.(int))
+	user, err := c.authService.GetUserByID(ctx.Request.Context(), userID.(int))
 	if err != nil {
-		models.NewError(c, http.StatusNotFound, "User not found")
+		utils.SendError(ctx, http.StatusNotFound, "User not found")
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	utils.SendSuccess(ctx, http.StatusOK, "data retrieved successfully", user)
 }
 
 // Logout godoc
@@ -104,25 +110,22 @@ func GetProfile(c *gin.Context) {
 // @Produce json
 // @Param request body models.RefreshTokenRequest true "Logout request"
 // @Security Token
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
+// @Success 200 {object} dto.SuccessResponse
+// @Failure 400 {object} dto.ErrorResponse
 // @Router /auth/logout [post]
-func Logout(c *gin.Context) {
-	var req models.RefreshTokenRequest
-	if err := c.ShouldBind(&req); err != nil {
-		models.NewError(c, http.StatusBadRequest, err.Error())
+func (c *AuthController) Logout(ctx *gin.Context) {
+	var req dto.LogoutRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		utils.SendError(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if err := models.Logout(req.RefreshToken); err != nil {
-		models.NewError(c, http.StatusBadRequest, err.Error())
+	if err := c.authService.Logout(req.Token); err != nil {
+		utils.SendError(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, models.APIResponse{
-		Success: true,
-		Message: "Logged out successfully",
-	})
+	utils.SendSuccess(ctx, http.StatusOK, "Logged out successfully", nil)
 }
 
 // Forgot Password godoc
@@ -132,23 +135,24 @@ func Logout(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body models.PasswordResetRequest true "Forgot password request"
-// @Success 200 {object} models.APIResponse
-// @Failure 400 {object} models.HTTPError
-// @Failure 401 {object} models.HTTPError
+// @Success 200 {object} dto.SuccessResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
 // @Router /auth/forgot-password [post]
-func ForgotPassword(c *gin.Context) {
-	var req models.PasswordResetRequest
-	if err := c.ShouldBind(&req); err != nil {
-		models.NewError(c, http.StatusBadRequest, err.Error())
+func (c *AuthController) ForgotPassword(ctx *gin.Context) {
+	var req dto.PasswordResetRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		utils.SendError(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	res, err := models.ForgotPassword(req.Email)
+	message, err := c.authService.ForgotPassword(ctx.Request.Context(), req.Email)
 	if err != nil {
-		models.NewError(c, http.StatusInternalServerError, err.Error())
+		utils.SendError(ctx, http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	utils.SendSuccess(ctx, http.StatusOK, message, nil)
 }
 
 // Reset Password godoc
@@ -159,22 +163,22 @@ func ForgotPassword(c *gin.Context) {
 // @Produce json
 // @Param token query string true "token request"
 // @Param request body models.ResetPasswordRequest true "Reset password request"
-// @Success 200 {object} models.APIResponse
-// @Failure 400 {object} models.HTTPError
-// @Failure 401 {object} models.HTTPError
+// @Success 200 {object} dto.SuccessResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
 // @Router /auth/reset-password [post]
-func ResetPassword(c *gin.Context) {
-	token := c.Query("token")
-	var req models.ResetPasswordRequest
-	if err := c.ShouldBind(&req); err != nil {
-		models.NewError(c, http.StatusBadRequest, err.Error())
+func (c *AuthController) ResetPassword(ctx *gin.Context) {
+	token := ctx.Query("token")
+	var req dto.ResetPasswordRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		utils.SendError(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	res, err := models.ResetPassword(req, token)
+	status, err := c.authService.ResetPassword(ctx.Request.Context(), req, token)
 	if err != nil {
-		models.NewError(c, err.Error, err.Message)
+		utils.SendError(ctx, status, err.Error())
 	}
 
-	c.JSON(http.StatusOK, res)
+	utils.SendSuccess(ctx, http.StatusOK, "password reset successfully", nil)
 }
