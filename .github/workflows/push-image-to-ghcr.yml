@@ -56,7 +56,7 @@ jobs:
               -v "$PWD/migrations:/migrations" \
               migrate/migrate \
               -path=/migrations \
-              -database "postgres://postgres:1@postgres:5432/noir?sslmode=disable" \
+              -database "postgres://postgres:1@postgres:5432/postgres?sslmode=disable" \
               up
             docker compose up -d --build app
 
