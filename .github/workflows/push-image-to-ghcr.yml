@@ -42,10 +42,11 @@ jobs:
             docker compose pull ghcr.io/yasirmaxstyle/fgo24-be-tickitz:latest
             docker compose up -d postgres redis
             docker run --rm \
+              --network be-noir_netapp \
               -v "$PWD/migrations:/migrations" \
               migrate/migrate \
               -path=/migrations \
-              -database "postgres://postgres:1@localhost:5432/noir?sslmode=disable" \
+              -database "postgres://postgres:1@postgres:5432/noir?sslmode=disable" \
               up
             docker compose up -d --build app
 
