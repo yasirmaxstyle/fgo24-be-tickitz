@@ -58,5 +58,5 @@ jobs:
               -path=/migrations \
               -database "postgres://postgres:1@postgres:5432/postgres?sslmode=disable" \
               up
-            docker compose up -d --build app
+            docker compose up --build app
 
