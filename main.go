@@ -1,7 +1,11 @@
 package main
 
 import (
+	"context"
+	"log"
+	"noir-backend/container"
 	"noir-backend/router"
+	"noir-backend/seeder"
 	"noir-backend/utils"
 
 	"github.com/gin-gonic/gin"
@@ -17,11 +21,27 @@ import (
 //@name	Authorization
 
 func main() {
+	dbpool, err := utils.ConnectDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dbpool.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	utils.StartTransactionExpiryJob(ctx, dbpool)
+	seeder.SeedTMDBMovies(dbpool)
+	seeder.SeedAdminUser(dbpool)
+
+	redis := utils.InitRedis()
+
+	c := container.NewContainer(dbpool, redis)
+
 	r := gin.Default()
 
-	router.CombineRouter(r)
+	router.CombineRouter(r, c)
 
-	utils.SeedAdminUser()
-
-	r.Run(":8080")
+	r.Run(":9503")
+	log.Println("server runnng on port 9503")
 }
