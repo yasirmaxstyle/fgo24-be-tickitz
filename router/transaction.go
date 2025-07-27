@@ -1,15 +1,17 @@
 package router
 
 import (
-	"noir-backend/controllers"
+	"noir-backend/container"
 	"noir-backend/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
-func transactionRouter(r *gin.RouterGroup) {
+func transactionRouter(r *gin.RouterGroup, c *container.Container) {
 	r.Use(middleware.AuthMiddleware())
-	r.POST("/", controllers.CreateTransaction)
-	r.POST("/payment", controllers.ProcessPayment)
-	
+	r.POST("/", c.TransactionController.CreateTransaction)
+	r.POST("/payment", c.TransactionController.ProcessPayment)
+	r.GET("/:code", c.TransactionController.GetTransaction)
+	r.GET("/", c.TransactionController.GetTransaction)
+
 }
