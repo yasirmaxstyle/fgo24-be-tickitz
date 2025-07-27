@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"noir-backend/models"
 	"noir-backend/utils"
 	"strings"
 
@@ -24,28 +23,28 @@ func AuthMiddleware() gin.HandlerFunc {
 		}()
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			models.NewError(c, http.StatusUnauthorized, "Authorization header required")
+			utils.SendError(c, http.StatusUnauthorized, "Authorization header required")
 			c.Abort()
 			return
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		if tokenString == authHeader {
-			models.NewError(c, http.StatusUnauthorized, "Bearer token required")
+			utils.SendError(c, http.StatusUnauthorized, "Bearer token required")
 			c.Abort()
 			return
 		}
 
 		expCmd := utils.InitRedis().Exists(context.Background(), fmt.Sprintf("blacklist-token:%s", tokenString))
 		if expCmd.Val() != 0 {
-			models.NewError(c, http.StatusUnauthorized, "Expired token")
+			utils.SendError(c, http.StatusUnauthorized, "Expired token")
 			c.Abort()
 			return
 		}
 
 		claims, err := utils.ValidateToken(tokenString)
 		if err != nil {
-			models.NewError(c, http.StatusUnauthorized, err.Error())
+			utils.SendError(c, http.StatusUnauthorized, err.Error())
 			c.Abort()
 			return
 		}
