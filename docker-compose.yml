@@ -1,7 +1,6 @@
 services:
   app:
-    image: ghcr.io/yasirmastyle/fgo24-be-tickitz:latest
-    build: .
+    image: ghcr.io/yasirmaxstyle/fgo24-be-tickitz:latest
     networks:
       - netapp
     ports:
