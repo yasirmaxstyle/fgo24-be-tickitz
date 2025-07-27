@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"log"
 	"noir-backend/container"
 	"noir-backend/router"
-	"noir-backend/seeder"
 	"noir-backend/utils"
 
 	"github.com/gin-gonic/gin"
@@ -27,12 +25,12 @@ func main() {
 	}
 	defer dbpool.Close()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	// ctx, cancel := context.WithCancel(context.Background())
+	// defer cancel()
 
-	utils.StartTransactionExpiryJob(ctx, dbpool)
-	seeder.SeedTMDBMovies(dbpool)
-	seeder.SeedAdminUser(dbpool)
+	// utils.StartTransactionExpiryJob(ctx, dbpool)
+	// seeder.SeedTMDBMovies(dbpool)
+	// seeder.SeedAdminUser(dbpool)
 
 	redis := utils.InitRedis()
 
