@@ -10,10 +10,10 @@ import (
 )
 
 type AuthController struct {
-	authService *services.AuthService
+	authService services.AuthService
 }
 
-func NewAuthController(authService *services.AuthService) *AuthController {
+func NewAuthController(authService services.AuthService) *AuthController {
 	return &AuthController{authService: authService}
 }
 
@@ -82,7 +82,7 @@ func (c *AuthController) Login(ctx *gin.Context) {
 // @Tags profile
 // @Produce json
 // @Security Token
-// @Success 200 {object} models.User
+// @Success 200 {object} models.Profile
 // @Failure 401 {object} dto.ErrorResponse
 // @Failure 404 {object} dto.ErrorResponse
 // @Router /profile [get]

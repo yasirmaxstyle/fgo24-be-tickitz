@@ -15,8 +15,8 @@ type MovieController struct {
 	movieService services.MovieService
 }
 
-func NewMovieController(movieService *services.MovieService) *MovieController {
-	return &MovieController{movieService: *movieService}
+func NewMovieController(movieService services.MovieService) *MovieController {
+	return &MovieController{movieService: movieService}
 }
 
 // Add Movie godoc
@@ -29,8 +29,8 @@ func NewMovieController(movieService *services.MovieService) *MovieController {
 // @Param overview formData string true "Overview"
 // @Param duration formData int true "Duration (in minutes)"
 // @Param release_date formData string true "Release Date (YYYY-MM-DD)"
-// @Param director_id formData int false "Director ID"
-// @Param genre_ids formData string false "Comma-separated Genre IDs (e.g., 1,2,3)"
+// @Param director_id formData string false "Director Name"
+// @Param genre_ids formData []string false "Genre IDs list"
 // @Param cast formData []string false "Cast list"
 // @Param poster_path formData file false "Poster Image"
 // @Param backdrop_path formData file false "Backdrop Image"
@@ -42,31 +42,21 @@ func NewMovieController(movieService *services.MovieService) *MovieController {
 // @Failure 500 {object} dto.ErrorResponse "Something went wrong"
 // @Router /admin/movie [post]
 func (c *MovieController) AddMovie(ctx *gin.Context) {
-	role, exists := ctx.Get("role")
-	if !exists {
-		utils.SendError(ctx, http.StatusUnauthorized, "Status Unauthorized")
+	var req dto.CreateMovieRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		utils.SendError(ctx, http.StatusBadRequest, err.Error())
 		return
-	}
-
-	if role != "admin" {
-		utils.SendError(ctx, http.StatusForbidden, "only admin can access")
-		return
-	}
-
-	req, err := c.movieService.ParseCreateMovieRequest(ctx.Request.PostForm)
-	if err != nil {
-		utils.SendError(ctx, http.StatusInternalServerError, err.Error())
 	}
 
 	posterPath, err := utils.SaveUploadedFile(ctx, "poster_path", "uploads/movies/posters")
 	if err != nil {
-		utils.SendError(ctx, http.StatusInternalServerError, err)
+		utils.SendError(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	backdropPath, err := utils.SaveUploadedFile(ctx, "backdrop_path", "uploads/movies/backdrops")
 	if err != nil {
-		utils.SendError(ctx, http.StatusInternalServerError, err)
+		utils.SendError(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -78,9 +68,10 @@ func (c *MovieController) AddMovie(ctx *gin.Context) {
 		log.Println("Backdrop uploaded to:", *backdropPath)
 	}
 
-	movie, err := c.movieService.CreateMovie(ctx.Request.Context(), *req, posterPath, backdropPath)
+	movie, err := c.movieService.CreateMovie(ctx.Request.Context(), req, posterPath, backdropPath)
 	if err != nil {
 		utils.SendError(ctx, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	utils.SendSuccess(ctx, http.StatusCreated, "Movie created successfully", movie)
@@ -92,55 +83,45 @@ func (c *MovieController) AddMovie(ctx *gin.Context) {
 // @Tags admin
 // @Produce json
 // @Accept multipart/form-data
-// @Param title formData string true "Movie Title"
-// @Param overview formData string true "Overview"
-// @Param duration formData int true "Duration (in minutes)"
-// @Param release_date formData string true "Release Date (YYYY-MM-DD)"
-// @Param director_id formData int false "Director ID"
-// @Param genre_ids formData string false "Comma-separated Genre IDs (e.g., 1,2,3)"
+// @Param title formData string false "Movie Title"
+// @Param overview formData string false "Overview"
+// @Param duration formData int false "Duration (in minutes)"
+// @Param release_date formData string false "Release Date (YYYY-MM-DD)"
+// @Param director_id formData string false "Director Name"
+// @Param genre_ids formData []string false "Genre IDs list"
 // @Param cast formData []string false "Cast list"
 // @Param poster_path formData file false "Poster Image"
 // @Param backdrop_path formData file false "Backdrop Image"
-// @Param id_movie path integer true "Movie id"
+// @Param id path integer true "Movie id"
 // @Security Token
 // @Success 200 {object} dto.SuccessResponse "Movie updated successfully"
 // @Failure 400 {object} dto.ErrorResponse "Bad request"
 // @Failure 401 {object} dto.ErrorResponse "Unauthorized"
 // @Failure 403 {object} dto.ErrorResponse "Only accessed by admin"
 // @Failure 500 {object} dto.ErrorResponse "Something went wrong"
-// @Router /admin/movie/:id [patch]
+// @Router /admin/movie/{id} [patch]
 func (c *MovieController) UpdateMovie(ctx *gin.Context) {
-	role, exists := ctx.Get("role")
-	if !exists {
-		utils.SendError(ctx, http.StatusUnauthorized, "Status Unauthorized")
-		return
-	}
-
-	if role != "admin" {
-		utils.SendError(ctx, http.StatusForbidden, "only admin can access")
-		return
-	}
-
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		utils.SendError(ctx, http.StatusBadRequest, "Invalid movie ID")
 		return
 	}
 
-	req, err := c.movieService.ParseUpdateMovieRequest(ctx.Request.PostForm)
-	if err != nil {
-		utils.SendError(ctx, http.StatusInternalServerError, err.Error())
+	var req dto.UpdateMovieRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		utils.SendError(ctx, http.StatusBadRequest, err.Error())
+		return
 	}
 
 	posterPath, err := utils.SaveUploadedFile(ctx, "poster_path", "uploads/movies/posters")
 	if err != nil {
-		utils.SendError(ctx, http.StatusInternalServerError, err)
+		utils.SendError(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	backdropPath, err := utils.SaveUploadedFile(ctx, "backdrop_path", "uploads/movies/backdrops")
 	if err != nil {
-		utils.SendError(ctx, http.StatusInternalServerError, err)
+		utils.SendError(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -152,12 +133,13 @@ func (c *MovieController) UpdateMovie(ctx *gin.Context) {
 		log.Println("Backdrop uploaded to:", *backdropPath)
 	}
 
-	status, err := c.movieService.UpdateMovie(ctx.Request.Context(), id, *req, backdropPath, posterPath)
+	err = c.movieService.UpdateMovie(ctx.Request.Context(), id, req, backdropPath, posterPath)
 	if err != nil {
-		utils.SendError(ctx, status, err)
+		utils.SendError(ctx, http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	utils.SendSuccess(ctx, status, "Movie updated successfully", nil)
+	utils.SendSuccess(ctx, http.StatusOK, "Movie updated successfully", nil)
 }
 
 // Delete Movie godoc
@@ -165,38 +147,28 @@ func (c *MovieController) UpdateMovie(ctx *gin.Context) {
 // @Description Delete existing movie by admin
 // @Tags admin
 // @Produce json
-// @Param id_movie path integer true "Movie id"
+// @Param id path integer true "Movie id"
 // @Security Token
 // @Success 200 {object} dto.SuccessResponse "Movie deleted successfully"
 // @Failure 400 {object} dto.ErrorResponse "Bad request"
 // @Failure 401 {object} dto.ErrorResponse "Unauthorized"
 // @Failure 403 {object} dto.ErrorResponse "Only accessed by admin"
 // @Failure 500 {object} dto.ErrorResponse "Something went wrong"
-// @Router /admin/movie/:id [delete]
+// @Router /admin/movie/{id} [delete]
 func (c *MovieController) DeleteMovie(ctx *gin.Context) {
-	role, exists := ctx.Get("role")
-	if !exists {
-		utils.SendError(ctx, http.StatusUnauthorized, "Status Unauthorized")
-		return
-	}
-
-	if role != "admin" {
-		utils.SendError(ctx, http.StatusForbidden, "only admin can access")
-		return
-	}
-
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		utils.SendError(ctx, http.StatusBadRequest, "Invalid movie ID")
 		return
 	}
 
-	status, err := c.movieService.DeleteMovie(ctx.Request.Context(), id)
+	err = c.movieService.DeleteMovie(ctx.Request.Context(), id)
 	if err != nil {
-		utils.SendError(ctx, status, err)
+		utils.SendError(ctx, http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	utils.SendSuccess(ctx, status, "Movie deleted successfully", nil)
+	utils.SendSuccess(ctx, http.StatusOK, "Movie deleted successfully", nil)
 }
 
 func (c *MovieController) GetMovies(ctx *gin.Context) {
