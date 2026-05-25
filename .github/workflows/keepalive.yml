@@ -1,0 +1,26 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # Runs every 3 days at midnight
+    - cron: '0 0 */3 * *'
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  ping-database:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PostgreSQL Client
+        run: sudo apt-get install -y postgresql-client
+      
+      - name: Ping Database
+        env:
+          DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+        run: |
+          if [ -z "$DB_CONNECTION_STRING" ]; then
+            echo "Error: DB_CONNECTION_STRING secret is not set."
+            exit 1
+          fi
+          echo "Executing SELECT 1..."
+          psql "$DB_CONNECTION_STRING" -c "SELECT 1;"
+          echo "Ping successful."
