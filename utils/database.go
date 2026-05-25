@@ -8,14 +8,18 @@ import (
 )
 
 func ConnectDB() (*pgxpool.Pool, error) {
-	dbURL := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		Load().DBUser,
-		Load().DBPassword,
-		Load().DBHost,
-		Load().DBPort,
-		Load().DBName,
-	)
+	dbURL := Load().DBConnectionString
+	if dbURL == "" {
+		dbURL = fmt.Sprintf(
+			"postgres://%s:%s@%s:%s/%s?sslmode=%s",
+			Load().DBUser,
+			Load().DBPassword,
+			Load().DBHost,
+			Load().DBPort,
+			Load().DBName,
+			Load().DBSSLMode,
+		)
+	}
 
 	pool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {

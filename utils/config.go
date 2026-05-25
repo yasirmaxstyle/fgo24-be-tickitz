@@ -8,18 +8,20 @@ import (
 )
 
 type Config struct {
-	DBHost        string
-	DBPort        string
-	DBUser        string
-	DBPassword    string
-	DBName        string
-	RedisHost     string
-	RedisPort     string
-	RedisPassword string
-	JWTSecret     string
-	Port          string
-	SMTP          *SMTPConfig
-	Admin         *AdminConfig
+	DBHost             string
+	DBPort             string
+	DBUser             string
+	DBPassword         string
+	DBName             string
+	DBConnectionString string
+	DBSSLMode          string
+	RedisHost          string
+	RedisPort          string
+	RedisPassword      string
+	JWTSecret          string
+	Port               string
+	SMTP               *SMTPConfig
+	Admin              *AdminConfig
 }
 
 type SMTPConfig struct {
@@ -40,16 +42,18 @@ func Load() *Config {
 	godotenv.Load()
 
 	return &Config{
-		DBHost:        getEnv("DB_HOST", "localhost"),
-		DBPort:        getEnv("DB_PORT", "5432"),
-		DBUser:        getEnv("DB_USER", "postgres"),
-		DBPassword:    getEnv("DB_PASSWORD", ""),
-		DBName:        getEnv("DB_NAME", "postgres"),
-		RedisHost:     getEnv("REDIS_HOST", "localhost"),
-		RedisPort:     getEnv("REDIS_PORT", "6379"),
-		RedisPassword: getEnv("REDIS_PASSWORD", ""),
-		JWTSecret:     getEnv("JWT_SECRET", "secretkey"),
-		Port:          getEnv("PORT", "8080"),
+		DBHost:             getEnv("DB_HOST", "localhost"),
+		DBPort:             getEnv("DB_PORT", "5432"),
+		DBUser:             getEnv("DB_USER", "postgres"),
+		DBPassword:         getEnv("DB_PASSWORD", ""),
+		DBName:             getEnv("DB_NAME", "postgres"),
+		DBConnectionString: getEnv("DB_CONNECTION_STRING", ""),
+		DBSSLMode:          getEnv("DB_SSLMODE", "disable"),
+		RedisHost:          getEnv("REDIS_HOST", "localhost"),
+		RedisPort:          getEnv("REDIS_PORT", "6379"),
+		RedisPassword:      getEnv("REDIS_PASSWORD", ""),
+		JWTSecret:          getEnv("JWT_SECRET", "secretkey"),
+		Port:               getEnv("PORT", "8080"),
 		SMTP: &SMTPConfig{
 			Host:     getEnv("SMTP_HOST", "smtp.gmail.com"),
 			Port:     getEnvInt("SMTP_PORT", 587),
