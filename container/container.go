@@ -2,6 +2,7 @@ package container
 
 import (
 	"noir-backend/controllers"
+	"noir-backend/repositories"
 	"noir-backend/services"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -9,22 +10,25 @@ import (
 )
 
 type Container struct {
-	AuthService           *services.AuthService
+	AuthService           services.AuthService
 	AuthController        *controllers.AuthController
-	MovieService          *services.MovieService
+	MovieService          services.MovieService
 	MovieController       *controllers.MovieController
-	TransactionService    *services.TransactionService
+	TransactionService    services.TransactionService
 	TransactionController *controllers.TransactionController
 }
 
 func NewContainer(db *pgxpool.Pool, redis *redis.Client) *Container {
-	authService := services.NewAuthService(db, redis)
+	authRepo := repositories.NewAuthRepository(db)
+	authService := services.NewAuthService(authRepo, redis)
 	authController := controllers.NewAuthController(authService)
 
-	movieService := services.NewMovieService(db)
+	movieRepo := repositories.NewMovieRepository(db)
+	movieService := services.NewMovieService(movieRepo)
 	movieController := controllers.NewMovieController(movieService)
 
-	transactionService := services.NewTransactionService(db)
+	transactionRepo := repositories.NewTransactionRepository(db)
+	transactionService := services.NewTransactionService(transactionRepo)
 	transactionController := controllers.NewTransactionController(transactionService)
 
 	return &Container{
