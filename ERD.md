@@ -5,21 +5,22 @@ title: ERD Movie Ticketing
 ---
 erDiagram
 direction LR
-    user ||--O|profile : has
-    user ||--o{transactions : creates
+    user ||--o| profile : has
+    user ||--o{ transactions : creates
+    cinemas ||--o{ screens : contains
+    screens ||--o{ showtimes : "shows in"
 
-    tickets }o--||showtimes : "booked for"
-    transactions |o--|{tickets : contains
-    transactions }|--||payment_method : uses
+    tickets }o--|| showtimes : "booked for"
+    transactions |o--|{ tickets : contains
+    transactions }|--|| payment_method : uses
 
-    movies ||--o{showtimes : "shown in"
-    showtimes }|--||cinemas : "held at"
+    movies ||--o{ showtimes : "shown in"
 
-    movies ||--o{movies_genres : has
-    directors||--o{movies : directs
-    actors ||--o{movies_cast : acts_in
-    movies_cast}o--||movies : appears_in
-    movies_genres }|--||genres : has
+    movies ||--o{ movies_genres : has
+    directors||--o{ movies : directs
+    actors ||--o{ movies_cast : acts_in
+    movies_cast }o--|| movies : appears_in
+    movies_genres }|--|| genres : has
 
     user{
         int user_id PK
@@ -29,11 +30,11 @@ direction LR
         timestamp created_at
         timestamp updated_at
         timestamp last_login
-        int profile_id FK
     }
 
     profile{
         int profile_id PK
+        int user_id FK
         string first_name
         string last_name
         string phone_number
@@ -63,18 +64,26 @@ direction LR
         string ticket_code UK
         int showtime_id FK
         string seat_number
+        decimal price "DECIMAL(10,2)"
         string status "booked, used, cancelled"
         int transaction_id FK
+        timestamp created_at
+    }
+
+    screens { 
+        int screen_id PK
+        uuid cinema_id FK
+        string name
+        int total_seats
         timestamp created_at
     }
 
     showtimes{
         int showtime_id PK
         int movie_id FK
-        int cinema_id FK
+        int screen_id FK
         timestamp show_datetime
-        decimal price "DECIMAL(10,2)"
-        int available_seats
+        decimal base_price "DECIMAL(10,2)"
         timestamp created_at
     }
 
