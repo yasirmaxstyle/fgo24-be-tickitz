@@ -1,4 +1,4 @@
 CREATE TABLE genres (
-    id SERIAL PRIMARY KEY,
+    genre_id SERIAL PRIMARY KEY,
     name VARCHAR(50) UNIQUE NOT NULL
 );

@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS directors;
+DROP TABLE IF EXISTS directors CASCADE;

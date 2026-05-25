@@ -1,5 +1,5 @@
 CREATE TABLE cinemas (
-    id SERIAL PRIMARY KEY,
+    cinema_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     image_path VARCHAR(255),
     location VARCHAR(255) NOT NULL,

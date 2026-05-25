@@ -1,0 +1,7 @@
+CREATE TABLE screens (
+    screen_id SERIAL PRIMARY KEY,
+    cinema_id INTEGER NOT NULL REFERENCES cinemas (cinema_id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    total_seats INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

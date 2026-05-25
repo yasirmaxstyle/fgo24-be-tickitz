@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS movies_cast;
+DROP TABLE IF EXISTS movies_cast CASCADE;

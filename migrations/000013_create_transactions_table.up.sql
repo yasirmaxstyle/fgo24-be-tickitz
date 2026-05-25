@@ -1,5 +1,5 @@
 CREATE TABLE transactions (
-    id SERIAL PRIMARY KEY,
+    transaction_id SERIAL PRIMARY KEY,
     transaction_code VARCHAR(50) UNIQUE NOT NULL,
     recipient_email VARCHAR(255) NOT NULL,
     recipient_full_name VARCHAR(255) NOT NULL,
@@ -16,6 +16,6 @@ CREATE TABLE transactions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP NOT NULL,
     paid_at TIMESTAMP,
-    created_by INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    payment_method_id INTEGER REFERENCES payment_method (id)
+    created_by INTEGER NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
+    payment_method_id INTEGER REFERENCES payment_method (payment_method_id)
 );

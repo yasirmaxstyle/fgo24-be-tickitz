@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS movies_genres;
+DROP TABLE IF EXISTS movies_genres CASCADE;
