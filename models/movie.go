@@ -14,37 +14,36 @@ type Movie struct {
 	ReleaseDate  time.Time `json:"release_date" db:"release_date"`
 	DirectorID   *int      `json:"director_id" db:"director_id"`
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 }
 
 type MovieCast struct {
-	ID      int    `json:"id" db:"id"`
-	MovieID int    `json:"movie_id" db:"movie_id"`
-	ActorID int    `json:"actor_id" db:"actor_id"`
-	Role    string `json:"role" db:"role"`
+	MovieCastID int    `json:"movie_cast_id" db:"movie_cast_id"`
+	MovieID     int    `json:"movie_id" db:"movie_id"`
+	ActorID     int    `json:"actor_id" db:"actor_id"`
+	Role        string `json:"role" db:"role"`
 }
 
 type Actor struct {
-	ID        int    `json:"id" db:"id"`
+	ActorID   int    `json:"actor_id" db:"actor_id"`
 	FirstName string `json:"first_name" db:"first_name"`
 	LastName  string `json:"last_name" db:"last_name"`
 }
 
 type Director struct {
-	DirectorID int    `json:"director_id" db:"id"`
+	DirectorID int    `json:"director_id" db:"director_id"`
 	FirstName  string `json:"first_name" db:"first_name"`
 	LastName   string `json:"last_name" db:"last_name"`
 }
 
 type MovieGenre struct {
-	ID      int    `json:"id" db:"id"`
-	MovieID int    `json:"movie_id" db:"movie_id"`
-	Genre   string `json:"genre" db:"genre"`
+	MovieGenreID int `json:"movie_genre_id" db:"movie_genre_id"`
+	MovieID      int `json:"movie_id" db:"movie_id"`
+	GenreID      int `json:"genre_id" db:"genre_id"`
 }
 
 type Genre struct {
-	ID   int    `json:"id" db:"id"`
-	Name string `json:"name" db:"name"`
+	GenreID int    `json:"genre_id" db:"genre_id"`
+	Name    string `json:"name" db:"name"`
 }
 
 type MovieJoinRow struct {
@@ -56,7 +55,6 @@ type MovieJoinRow struct {
 	Duration     int       `db:"duration"`
 	ReleaseDate  time.Time `db:"release_date"`
 	CreatedAt    time.Time `db:"created_at"`
-	UpdatedAt    time.Time `db:"updated_at"`
 	Director     *string   `db:"director"`
 	Genres       *[]string `db:"genres"`
 	Cast         *[]string `db:"cast"`

@@ -25,19 +25,19 @@ type Ticket struct {
 	TicketCode    string    `json:"ticket_code" db:"ticket_code"`
 	ShowtimeID    int       `json:"showtime_id" db:"showtime_id"`
 	SeatNumber    string    `json:"seat_number" db:"seat_number"`
+	Price         float64   `json:"price" db:"price"`
 	Status        string    `json:"status" db:"status"`
 	TransactionID int       `json:"transaction_id" db:"transaction_id"`
 	CreatedAt     time.Time `json:"created_at" db:"created_at"`
 }
 
 type Showtime struct {
-	ShowtimeID     int       `json:"showtime_id" db:"showtime_id"`
-	MovieID        int       `json:"movie_id" db:"movie_id"`
-	CinemaID       int       `json:"cinema_id" db:"cinema_id"`
-	ShowDatetime   time.Time `json:"show_datetime" db:"show_datetime"`
-	Price          float64   `json:"price" db:"price"`
-	AvailableSeats int       `json:"available_seats" db:"available_seats"`
-	CreatedAt      time.Time `json:"created_at" db:"created_at"`
+	ShowtimeID   int       `json:"showtime_id" db:"showtime_id"`
+	MovieID      int       `json:"movie_id" db:"movie_id"`
+	ScreenID     int       `json:"screen_id" db:"screen_id"`
+	ShowDatetime time.Time `json:"show_datetime" db:"show_datetime"`
+	BasePrice    float64   `json:"base_price" db:"base_price"`
+	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 }
 
 type PaymentMethod struct {
@@ -45,14 +45,15 @@ type PaymentMethod struct {
 	Name            string `json:"name" db:"name"`
 	Code            string `json:"code" db:"code"`
 	IsActive        bool   `json:"is_active" db:"is_active"`
+	CreatedAt       time.Time `json:"created_at" db:"created_at"`
 }
 
 type Cinema struct {
-	ID          int       `json:"id" db:"id"`
+	CinemaID    int       `json:"cinema_id" db:"cinema_id"`
 	Name        string    `json:"name" db:"name"`
 	ImagePath   string    `json:"image_path" db:"image_path"`
 	Location    string    `json:"location" db:"location"`
-	Total_seats int       `json:"total_seats" db:"total_seats"`
+	TotalSeats  int       `json:"total_seats" db:"total_seats"`
 	Address     string    `json:"address" db:"address"`
 	IsActive    bool      `json:"is_active" db:"is_active"`
 	CreatedAt   time.Time `json:"created_at" db:"created_at"`
@@ -68,7 +69,7 @@ type TransactionJoinRow struct {
 	SeatNumber      *string    `db:"seat_number"`
 	ShowtimeID      *int       `db:"showtime_id"`
 	ShowDatetime    *time.Time `db:"show_datetime"`
-	Price           *float64   `db:"price"`
+	TicketPrice     *float64   `db:"ticket_price"`
 	MovieID         *int       `db:"movie_id"`
 	MovieTitle      *string    `db:"movie_title"`
 	CinemaID        *int       `db:"cinema_id"`
