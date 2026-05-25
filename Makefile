@@ -10,9 +10,12 @@ DB_PORT?=5433
 DB_NAME?=noir
 DB_SSLMODE?=disable
 
+DB_CONNECTION_STRING?=""
+
 MIGRATION_DIR?=./migrations
 
-MIGRATE=migrate -source file://$(MIGRATION_DIR) -database "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSLMODE)"
+# MIGRATE=migrate -source file://$(MIGRATION_DIR) -database "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSLMODE)"
+MIGRATE=migrate -source file://$(MIGRATION_DIR) -database "$(DB_CONNECTION_STRING)"
 
 migration_create:
 	migrate create -seq -dir $(MIGRATION_DIR) -ext sql $(name)
