@@ -8,7 +8,7 @@ import (
 )
 
 func adminRouter(r *gin.RouterGroup, c *container.Container) {
-	r.Use(middleware.AuthMiddleware())
+	r.Use(middleware.AuthMiddleware(), middleware.AdminMiddleware())
 	r.POST("/movie", c.MovieController.AddMovie)          //add movie by admin
 	r.PATCH("/movie/:id", c.MovieController.UpdateMovie)  //edit movie by admin
 	r.DELETE("/movie/:id", c.MovieController.DeleteMovie) //edit movie by admin
