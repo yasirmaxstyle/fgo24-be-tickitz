@@ -34,7 +34,6 @@ type MovieResponse struct {
 	Genre        []string  `json:"genre"`
 	Cast         []string  `json:"cast"`
 	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 type PagedMoviesResponse struct {

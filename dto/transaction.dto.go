@@ -42,6 +42,7 @@ type TicketResponse struct {
 	TicketCode    string    `json:"ticket_code"`
 	ShowtimeID    int       `json:"showtime_id"`
 	SeatNumber    string    `json:"seat_number"`
+	Price         float64   `json:"price"`
 	Status        string    `json:"status"`
 	TransactionID int       `json:"transaction_id"`
 	CreatedAt     time.Time `json:"created_at"`
@@ -50,7 +51,7 @@ type TicketResponse struct {
 type ShowtimeResponse struct {
 	ShowtimeID   int       `json:"showtime_id"`
 	ShowDatetime time.Time `json:"show_datetime"`
-	Price        float64   `json:"price"`
+	BasePrice    float64   `json:"base_price"`
 }
 
 type CinemaResponse struct {
