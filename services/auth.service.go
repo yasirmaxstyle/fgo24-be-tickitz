@@ -8,40 +8,40 @@ import (
 	"log"
 	"net/http"
 	"net/smtp"
-	"noir-backend/dto"
-	"noir-backend/models"
 	"text/template"
 	"time"
 
+	"noir-backend/dto"
+	"noir-backend/models"
+	"noir-backend/repositories"
 	"noir-backend/utils"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 )
 
-type AuthService struct {
-	db    *pgxpool.Pool
+type AuthService interface {
+	Register(ctx context.Context, req dto.RegisterRequest) (*dto.UserResponse, error)
+	Login(ctx context.Context, req *dto.LoginRequest) (*dto.AuthResponse, error)
+	GetUserByID(ctx context.Context, userID int) (*models.Profile, error)
+	UpdateLastLogin(ctx context.Context, userID *int) error
+	Logout(token string) error
+	ForgotPassword(ctx context.Context, email string) (string, error)
+	ResetPassword(ctx context.Context, req dto.ResetPasswordRequest, token string) (int, error)
+}
+
+type authService struct {
+	repo  repositories.AuthRepository
 	redis *redis.Client
 }
 
-func NewAuthService(db *pgxpool.Pool, redis *redis.Client) *AuthService {
-	return &AuthService{db: db}
+func NewAuthService(repo repositories.AuthRepository, redis *redis.Client) *authService {
+	return &authService{repo: repo, redis: redis}
 }
 
-func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) (*dto.UserResponse, error) {
-	tx, err := s.db.Begin(ctx)
+func (s *authService) Register(ctx context.Context, req dto.RegisterRequest) (*dto.UserResponse, error) {
+	exists, err := s.repo.CheckUserExists(ctx, req.Email)
 	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-	defer tx.Rollback(ctx)
-
-	var exists bool
-	err = tx.QueryRow(ctx,
-		"SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)",
-		req.Email).Scan(&exists)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to check if user exists: %w", err)
 	}
 
 	if exists {
@@ -54,30 +54,16 @@ func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) (*d
 	}
 
 	user := &models.User{
-		Email:        req.Email,
-		PasswordHash: hashedPassword,
+		Email:    req.Email,
+		Password: hashedPassword,
 	}
 
-	err = tx.QueryRow(ctx, `
-		INSERT INTO users (email, password_hash, role)
-		VALUES ($1, $2, 'user')
-		RETURNING user_id`,
-		user.Email, user.PasswordHash).
-		Scan(&user.UserID)
+	err = s.repo.CreateUser(ctx, user)
 	if err != nil {
 		return nil, err
 	}
 
-	err = tx.QueryRow(ctx, `
-		INSERT INTO profile (user_id) 
-		VALUES ($1)
-		RETURNING user_id`,
-		user.UserID).Scan(&user.UserID)
-	if err != nil {
-		return nil, err
-	}
-
-	userReponse := &dto.UserResponse{
+	userResponse := &dto.UserResponse{
 		UserID:    user.UserID,
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
@@ -85,21 +71,17 @@ func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) (*d
 		LastLogin: user.LastLogin,
 	}
 
-	return userReponse, tx.Commit(ctx)
+	return userResponse, nil
 }
 
-func (s *AuthService) Login(ctx context.Context, req *dto.LoginRequest) (*dto.AuthResponse, error) {
-	user := &models.User{}
-	err := s.db.QueryRow(ctx,
-		`SELECT user_id, email, password_hash, role, created_at, updated_at, last_login
-		FROM users WHERE email = $1`,
-		req.Email).Scan(&user.UserID, &user.Email, &user.PasswordHash, &user.Role, &user.CreatedAt, &user.UpdatedAt, &user.LastLogin)
+func (s *authService) Login(ctx context.Context, req *dto.LoginRequest) (*dto.AuthResponse, error) {
+	user, err := s.repo.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		fmt.Println(err)
 		return nil, errors.New("invalid credentials")
 	}
 
-	if err := utils.CheckPasswordHash(req.Password, user.PasswordHash); err != nil {
+	if err := utils.CheckPasswordHash(req.Password, user.Password); err != nil {
 		return nil, errors.New("invalid credentials")
 	}
 
@@ -112,7 +94,7 @@ func (s *AuthService) Login(ctx context.Context, req *dto.LoginRequest) (*dto.Au
 		return nil, err
 	}
 
-	userReponse := &dto.UserResponse{
+	userResponse := &dto.UserResponse{
 		UserID:    user.UserID,
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
@@ -121,46 +103,37 @@ func (s *AuthService) Login(ctx context.Context, req *dto.LoginRequest) (*dto.Au
 	}
 
 	return &dto.AuthResponse{
-		User:  userReponse,
+		User:  userResponse,
 		Token: token,
 	}, nil
 }
 
-func (s *AuthService) GetUserByID(ctx context.Context, userID int) (*models.Profile, error) {
-	var user models.Profile
-	err := s.db.QueryRow(ctx, `
-		SELECT profile_id, first_name, last_name, email, phone_number, p.created_at, p.updated_at, last_login
-		FROM profile p
-		JOIN users u ON u.user_id = p.user_id
-		WHERE p.user_id = $1`,
-		userID).Scan(&user.UserID, &user.FirstName, &user.LastName, &user.Email, &user.PhoneNumber, &user.CreatedAt, &user.UpdatedAt, &user.LastLogin)
+func (s *authService) GetUserByID(ctx context.Context, userID int) (*models.Profile, error) {
+	user, err := s.repo.GetUserByID(ctx, userID)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
-	return &user, nil
+	return user, nil
 }
 
-func (r *AuthService) UpdateLastLogin(ctx context.Context, userID *int) error {
-	query := `UPDATE users SET last_login = $1 WHERE user_id = $2`
-	_, err := r.db.Exec(ctx, query, time.Now(), userID)
-	return err
+func (r *authService) UpdateLastLogin(ctx context.Context, userID *int) error {
+	return r.repo.UpdateLastLogin(ctx, *userID, time.Now())
 }
 
-func (r *AuthService) Logout(token string) error {
+func (r *authService) Logout(token string) error {
 	return r.redis.Set(context.Background(), fmt.Sprintf("blacklist-token:%s", token), "1", 24*time.Hour).Err()
 }
 
-func (s *AuthService) ForgotPassword(ctx context.Context, email string) (string, error) {
-	var userID int
-	err := s.db.QueryRow(context.Background(),
-		"SELECT user_id FROM users WHERE email = $1", email).Scan(&userID)
-
-	if err == pgx.ErrNoRows {
-		return "If the email exists, a reset link has been sent", nil
-	} else if err != nil {
+func (s *authService) ForgotPassword(ctx context.Context, email string) (string, error) {
+	userID, err := s.repo.GetUserIDByEmail(context.Background(), email)
+	if err != nil {
+		if err.Error() == "user not found" {
+			return "If the email exists, a reset link has been sent", nil
+		}
 		return "", fmt.Errorf("database error: %w", err)
 	}
+
 	token, err := utils.GenerateTokens(userID, "user")
 	if err != nil {
 		return "", fmt.Errorf("failed to generate token reset: %w", err)
@@ -174,10 +147,9 @@ func (s *AuthService) ForgotPassword(ctx context.Context, email string) (string,
 	}
 
 	return "If the email exists, a reset link has been sent", nil
-
 }
 
-func (s *AuthService) ResetPassword(ctx context.Context, req dto.ResetPasswordRequest, token string) (int, error) {
+func (s *authService) ResetPassword(ctx context.Context, req dto.ResetPasswordRequest, token string) (int, error) {
 	expCmd := utils.InitRedis().Exists(context.Background(), fmt.Sprintf("reset-pwd:%s", token))
 	if expCmd.Val() == 0 {
 		return http.StatusUnauthorized, fmt.Errorf("invalid or expired reset token")
@@ -195,22 +167,9 @@ func (s *AuthService) ResetPassword(ctx context.Context, req dto.ResetPasswordRe
 		return http.StatusInternalServerError, fmt.Errorf("failed to hash password")
 	}
 
-	tx, err := s.db.Begin(context.Background())
-	if err != nil {
-		return http.StatusInternalServerError, fmt.Errorf("database error")
-	}
-	defer tx.Rollback(context.Background())
-
-	_, err = tx.Exec(context.Background(),
-		"UPDATE users SET password_hash = $1 WHERE user_id = $2",
-		hashedPassword, userID)
-
+	err = s.repo.UpdatePassword(context.Background(), userID, hashedPassword)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("failed to update password")
-	}
-
-	if err = tx.Commit(context.Background()); err != nil {
-		return http.StatusInternalServerError, fmt.Errorf("failed to commit changes")
 	}
 
 	utils.InitRedis().Del(context.Background(), fmt.Sprintf("reset-pwd:%s", token)).Err()
