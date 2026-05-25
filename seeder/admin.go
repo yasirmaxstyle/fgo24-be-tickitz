@@ -54,9 +54,8 @@ func SeedAdminUser(db *pgxpool.Pool) {
 	}
 
 	result, err := tx.Exec(context.Background(), `
-		INSERT INTO profile (user_id) 
-		VALUES ($1)
-		RETURNING user_id`,
+		INSERT INTO profile (user_id, first_name, last_name, phone_number, avatar) 
+		VALUES ($1, '', '', '', '')`,
 		userID)
 	if err != nil {
 		log.Fatal("failed to create admin user: ", err)

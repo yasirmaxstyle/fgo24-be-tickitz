@@ -101,11 +101,13 @@ func seedFromTMDBEndpoint(db *pgxpool.Pool, category string) error {
 		for _, crew := range credits.Crew {
 			if crew.Job == "Director" {
 				firstName, lastName := utils.SplitFullName(crew.Name)
-				tx.QueryRow(context.Background(), `
+				err := tx.QueryRow(context.Background(), `SELECT director_id FROM directors WHERE first_name = $1 AND last_name = $2`, firstName, lastName).Scan(&directorID)
+				if err != nil {
+					tx.QueryRow(context.Background(), `
 						INSERT INTO directors (first_name, last_name) VALUES ($1, $2)
-						ON CONFLICT (first_name, last_name) DO NOTHING
-						RETURNING id
+						RETURNING director_id
 					`, firstName, lastName).Scan(&directorID)
+				}
 				break
 			}
 		}
@@ -117,9 +119,9 @@ func seedFromTMDBEndpoint(db *pgxpool.Pool, category string) error {
 
 		var movieID int
 		err = tx.QueryRow(context.Background(), `
-			INSERT INTO movies (title, overview, duration, release_date, directors_id, poster_path, backdrop_path, created_at, updated_at)
-		 	VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
-			RETURNING id
+			INSERT INTO movies (title, overview, duration, release_date, director_id, poster_path, backdrop_path, created_at)
+		 	VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+			RETURNING movie_id
 		`, detail.Title, detail.Overview, detail.Runtime, releaseDate, directorID,
 			"https://image.tmdb.org/t/p/w500"+detail.PosterPath,
 			"https://image.tmdb.org/t/p/original"+detail.BackdropPath,
@@ -131,13 +133,15 @@ func seedFromTMDBEndpoint(db *pgxpool.Pool, category string) error {
 
 		for _, g := range detail.Genres {
 			var genreID int
-			tx.QueryRow(context.Background(), `
-					INSERT INTO genres (genre_name) VALUES ($1)
-					ON CONFLICT (genre_name) DO NOTHING
-					RETURNING id
-				`, g.Name).Scan(&genreID)
+			err := tx.QueryRow(context.Background(), `SELECT genre_id FROM genres WHERE name = $1`, g.Name).Scan(&genreID)
+			if err != nil {
+				tx.QueryRow(context.Background(), `
+						INSERT INTO genres (name) VALUES ($1)
+						RETURNING genre_id
+					`, g.Name).Scan(&genreID)
+			}
 
-			tx.Exec(context.Background(), `INSERT INTO movie_genres (movie_id, genre_id) VALUES ($1, $2)`, movieID, genreID)
+			tx.Exec(context.Background(), `INSERT INTO movies_genres (movie_id, genre_id) VALUES ($1, $2)`, movieID, genreID)
 		}
 		for i, cast := range credits.Cast {
 			if i >= 5 {
@@ -147,13 +151,15 @@ func seedFromTMDBEndpoint(db *pgxpool.Pool, category string) error {
 			firstName, lastName := utils.SplitFullName(cast.Name)
 
 			var actorID int
-			tx.QueryRow(context.Background(), `
-					INSERT INTO actors (first_name, last_name) VALUES ($1, $2)
-					ON CONFLICT (first_name, last_name) DO NOTHING
-					RETURNING id
-				`, firstName, lastName).Scan(&actorID)
+			err := tx.QueryRow(context.Background(), `SELECT actor_id FROM actors WHERE first_name = $1 AND last_name = $2`, firstName, lastName).Scan(&actorID)
+			if err != nil {
+				tx.QueryRow(context.Background(), `
+						INSERT INTO actors (first_name, last_name) VALUES ($1, $2)
+						RETURNING actor_id
+					`, firstName, lastName).Scan(&actorID)
+			}
 
-			tx.Exec(context.Background(), `INSERT INTO movie_casts (movie_id, actor_id, role) VALUES ($1, $2)`, movieID, actorID, cast.Role)
+			tx.Exec(context.Background(), `INSERT INTO movies_cast (movie_id, actor_id, role) VALUES ($1, $2, $3)`, movieID, actorID, cast.Role)
 		}
 	}
 	if err := tx.Commit(ctx); err != nil {

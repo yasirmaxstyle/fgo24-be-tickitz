@@ -2,8 +2,10 @@ package main
 
 import (
 	"log"
+	"os"
 	"noir-backend/container"
 	"noir-backend/router"
+	"noir-backend/seeder"
 	"noir-backend/utils"
 
 	"github.com/gin-gonic/gin"
@@ -28,9 +30,18 @@ func main() {
 	// ctx, cancel := context.WithCancel(context.Background())
 	// defer cancel()
 
-	// utils.StartTransactionExpiryJob(ctx, dbpool)
-	// seeder.SeedTMDBMovies(dbpool)
-	// seeder.SeedAdminUser(dbpool)
+	// Parse flags for seeding
+	args := os.Args[1:]
+	if len(args) > 0 && args[0] == "--seed" {
+		log.Println("Running seeders...")
+		err := seeder.SeedTMDBMovies(dbpool)
+		if err != nil {
+			log.Printf("Error seeding movies: %v\n", err)
+		}
+		seeder.SeedAdminUser(dbpool)
+		log.Println("Seeding complete. Exiting...")
+		return
+	}
 
 	redis := utils.InitRedis()
 
