@@ -14,7 +14,6 @@ func CombineRouter(r *gin.Engine, c *container.Container) {
 	docs.SwaggerInfo.BasePath = "/"
 	r.Use(middleware.CORS())
 	r.Use(middleware.ErrorHandler())
-	r.Static("/uploads", "./uploads")
 
 	authRouter(r.Group("/auth"), c)
 	adminRouter(r.Group("/admin"), c)
