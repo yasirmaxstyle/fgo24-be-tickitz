@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -20,6 +21,8 @@ func ConnectDB() (*pgxpool.Pool, error) {
 			Load().DBSSLMode,
 		)
 	}
+
+	log.Printf("Database URL: %s", dbURL)
 
 	pool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
