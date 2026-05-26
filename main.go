@@ -2,11 +2,11 @@ package main
 
 import (
 	"log"
-	"os"
 	"noir-backend/container"
 	"noir-backend/router"
 	"noir-backend/seeder"
 	"noir-backend/utils"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -51,6 +51,7 @@ func main() {
 
 	router.CombineRouter(r, c)
 
+	log.Println("Server running on http://localhost:9503")
+	log.Println("Swagger documentation available at http://localhost:9503/swagger/index.html")
 	r.Run(":9503")
-	log.Println("server runnng on port 9503")
 }
