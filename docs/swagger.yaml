@@ -1,53 +1,52 @@
 basePath: /
 definitions:
-  models.APIResponse:
-    properties:
-      data: {}
-      error:
-        type: string
-      message:
-        type: string
-      success:
-        type: boolean
-    type: object
-  models.AuthResponse:
+  dto.AuthResponse:
     properties:
       token:
         type: string
       user:
-        $ref: '#/definitions/models.User'
+        $ref: '#/definitions/dto.UserResponse'
     type: object
-  models.CreateMovieRequest:
+  dto.CinemaResponse:
     properties:
-      directors_id:
+      cinema_id:
         type: integer
-      duration:
-        minimum: 1
+      location:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.CreateTransactionRequest:
+    properties:
+      payment_method_id:
         type: integer
-      genres:
+      recipient_email:
+        type: string
+      recipient_full_name:
+        type: string
+      recipient_phone_number:
+        type: string
+      seat_numbers:
         items:
           type: string
         type: array
-      overview:
-        type: string
-      release_date:
-        type: string
-      title:
-        type: string
-    required:
-    - duration
-    - overview
-    - release_date
-    - title
-    type: object
-  models.HTTPError:
-    properties:
-      error:
+      showtime_id:
         type: integer
-      message:
-        type: string
+    required:
+    - payment_method_id
+    - recipient_email
+    - recipient_full_name
+    - recipient_phone_number
+    - seat_numbers
+    - showtime_id
     type: object
-  models.LoginRequest:
+  dto.ErrorResponse:
+    properties:
+      error: {}
+      success:
+        type: boolean
+    type: object
+  dto.LoginRequest:
     properties:
       email:
         type: string
@@ -57,21 +56,85 @@ definitions:
     - email
     - password
     type: object
-  models.PasswordResetRequest:
+  dto.LogoutRequest:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  dto.MovieResponse:
+    properties:
+      backdrop_path:
+        type: string
+      cast:
+        items:
+          type: string
+        type: array
+      created_at:
+        type: string
+      director:
+        type: string
+      duration:
+        type: integer
+      genre:
+        items:
+          type: string
+        type: array
+      movie_id:
+        type: integer
+      overview:
+        type: string
+      poster_path:
+        type: string
+      release_date:
+        type: string
+      title:
+        type: string
+    type: object
+  dto.PagedMoviesResponse:
+    properties:
+      movies:
+        items:
+          $ref: '#/definitions/dto.MovieResponse'
+        type: array
+      page_info:
+        $ref: '#/definitions/dto.Pagination'
+    type: object
+  dto.Pagination:
+    properties:
+      limit:
+        type: integer
+      next_page:
+        type: string
+      offset:
+        type: integer
+      page:
+        type: integer
+      previous_page:
+        type: string
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  dto.PasswordResetRequest:
     properties:
       email:
         type: string
     required:
     - email
     type: object
-  models.RefreshTokenRequest:
+  dto.ProcessPaymentRequest:
     properties:
-      refresh_token:
+      payment_proof:
+        type: string
+      transaction_code:
         type: string
     required:
-    - refresh_token
+    - transaction_code
     type: object
-  models.RegisterRequest:
+  dto.RegisterRequest:
     properties:
       confirmPassword:
         type: string
@@ -85,7 +148,7 @@ definitions:
     - email
     - password
     type: object
-  models.ResetPasswordRequest:
+  dto.ResetPasswordRequest:
     properties:
       new_password:
         minLength: 6
@@ -93,34 +156,116 @@ definitions:
     required:
     - new_password
     type: object
-  models.UpdateMovieRequest:
+  dto.ShowtimeResponse:
     properties:
-      directors_id:
+      base_price:
+        type: number
+      show_datetime:
+        type: string
+      showtime_id:
         type: integer
-      duration:
+    type: object
+  dto.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.TicketResponse:
+    properties:
+      created_at:
+        type: string
+      price:
+        type: number
+      seat_number:
+        type: string
+      showtime_id:
         type: integer
-      genres:
+      status:
+        type: string
+      ticket_code:
+        type: string
+      ticket_id:
+        type: integer
+      transaction_id:
+        type: integer
+    type: object
+  dto.TransactionListResponse:
+    properties:
+      cinema:
+        $ref: '#/definitions/dto.CinemaResponse'
+      created_at:
+        type: string
+      expires_at:
+        type: string
+      movie:
+        $ref: '#/definitions/dto.MovieResponse'
+      seats:
         items:
           type: string
         type: array
-      overview:
+      showtime:
+        $ref: '#/definitions/dto.ShowtimeResponse'
+      status:
         type: string
-      release_date:
+      total_amount:
+        type: number
+      transaction_code:
         type: string
-      title:
-        type: string
+      transaction_id:
+        type: integer
     type: object
-  models.User:
+  dto.TransactionResponse:
     properties:
-      createdAt:
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      expires_at:
+        type: string
+      paid_at:
+        type: string
+      payment_method_id:
+        type: integer
+      recipient_email:
+        type: string
+      recipient_full_name:
+        type: string
+      recipient_phone_number:
+        type: string
+      status:
+        type: string
+      total_amount:
+        type: number
+      total_seats:
+        type: integer
+      transaction_code:
+        type: string
+      transaction_id:
+        type: integer
+    type: object
+  dto.TransactionResult:
+    properties:
+      tickets:
+        items:
+          $ref: '#/definitions/dto.TicketResponse'
+        type: array
+      transaction:
+        $ref: '#/definitions/dto.TransactionResponse'
+    type: object
+  dto.UserResponse:
+    properties:
+      created_at:
         type: string
       email:
         type: string
-      lastLogin:
+      last_login:
         type: string
-      updatedAt:
+      updated_at:
         type: string
-      userId:
+      user_id:
         type: integer
     type: object
 info:
@@ -131,29 +276,79 @@ info:
 paths:
   /admin/movie:
     post:
+      consumes:
+      - multipart/form-data
       description: Add new movie by admin
       parameters:
-      - description: Create movie
-        in: body
-        name: request
+      - description: Movie Title
+        in: formData
+        name: title
         required: true
-        schema:
-          $ref: '#/definitions/models.CreateMovieRequest'
+        type: string
+      - description: Overview
+        in: formData
+        name: overview
+        required: true
+        type: string
+      - description: Duration (in minutes)
+        in: formData
+        name: duration
+        required: true
+        type: integer
+      - description: Release Date (YYYY-MM-DD)
+        in: formData
+        name: release_date
+        required: true
+        type: string
+      - description: Director Name
+        in: formData
+        name: director_id
+        type: string
+      - collectionFormat: csv
+        description: Genre IDs list
+        in: formData
+        items:
+          type: string
+        name: genre_ids
+        type: array
+      - collectionFormat: csv
+        description: Cast list
+        in: formData
+        items:
+          type: string
+        name: cast
+        type: array
+      - description: Poster Image
+        in: formData
+        name: poster_path
+        type: file
+      - description: Backdrop Image
+        in: formData
+        name: backdrop_path
+        type: file
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Movie created successfully
           schema:
-            $ref: '#/definitions/models.APIResponse'
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/models.HTTPError'
-        "404":
-          description: Not Found
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Only accessed by admin
           schema:
-            $ref: '#/definitions/models.HTTPError'
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Something went wrong
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - Token: []
       summary: Add new movie
@@ -163,7 +358,7 @@ paths:
     delete:
       description: Delete existing movie by admin
       parameters:
-      - description: Delete movie
+      - description: Movie id
         in: path
         name: id
         required: true
@@ -172,32 +367,78 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Movie deleted successfully
           schema:
-            $ref: '#/definitions/models.APIResponse'
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/models.HTTPError'
-        "404":
-          description: Not Found
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Only accessed by admin
           schema:
-            $ref: '#/definitions/models.HTTPError'
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Something went wrong
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - Token: []
       summary: Delete existing movie
       tags:
       - admin
     patch:
+      consumes:
+      - multipart/form-data
       description: Add existing movie by admin
       parameters:
-      - description: Update movie
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/models.UpdateMovieRequest'
-      - description: Update movie request
+      - description: Movie Title
+        in: formData
+        name: title
+        type: string
+      - description: Overview
+        in: formData
+        name: overview
+        type: string
+      - description: Duration (in minutes)
+        in: formData
+        name: duration
+        type: integer
+      - description: Release Date (YYYY-MM-DD)
+        in: formData
+        name: release_date
+        type: string
+      - description: Director Name
+        in: formData
+        name: director_id
+        type: string
+      - collectionFormat: csv
+        description: Genre IDs list
+        in: formData
+        items:
+          type: string
+        name: genre_ids
+        type: array
+      - collectionFormat: csv
+        description: Cast list
+        in: formData
+        items:
+          type: string
+        name: cast
+        type: array
+      - description: Poster Image
+        in: formData
+        name: poster_path
+        type: file
+      - description: Backdrop Image
+        in: formData
+        name: backdrop_path
+        type: file
+      - description: Movie id
         in: path
         name: id
         required: true
@@ -206,17 +447,25 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Movie updated successfully
           schema:
-            $ref: '#/definitions/models.APIResponse'
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/models.HTTPError'
-        "404":
-          description: Not Found
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Only accessed by admin
           schema:
-            $ref: '#/definitions/models.HTTPError'
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Something went wrong
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - Token: []
       summary: Update existing movie
@@ -233,22 +482,22 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.PasswordResetRequest'
+          $ref: '#/definitions/dto.PasswordResetRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.APIResponse'
+            $ref: '#/definitions/dto.SuccessResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.HTTPError'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/models.HTTPError'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Request reset password
       tags:
       - auth
@@ -263,22 +512,22 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.LoginRequest'
+          $ref: '#/definitions/dto.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.AuthResponse'
+            $ref: '#/definitions/dto.AuthResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.HTTPError'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/models.HTTPError'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Login user
       tags:
       - auth
@@ -293,22 +542,18 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.RefreshTokenRequest'
+          $ref: '#/definitions/dto.LogoutRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/dto.SuccessResponse'
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - Token: []
       summary: Logout user
@@ -325,22 +570,22 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.RegisterRequest'
+          $ref: '#/definitions/dto.RegisterRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.APIResponse'
+            $ref: '#/definitions/dto.SuccessResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.HTTPError'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.HTTPError'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Register a new user
       tags:
       - auth
@@ -360,25 +605,190 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.ResetPasswordRequest'
+          $ref: '#/definitions/dto.ResetPasswordRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.APIResponse'
+            $ref: '#/definitions/dto.SuccessResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.HTTPError'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/models.HTTPError'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Reset password in new link provided
       tags:
       - auth
+  /movie/:
+    get:
+      description: Get a paginated list of all movies
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: All movies retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PagedMoviesResponse'
+              type: object
+        "500":
+          description: Something went wrong
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - Token: []
+      summary: Get all movies
+      tags:
+      - movie
+  /movie/{id}:
+    get:
+      description: Get complete details of a specific movie by its ID
+      parameters:
+      - description: Movie ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Movie retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.MovieResponse'
+              type: object
+        "400":
+          description: Invalid movie ID
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Movie not found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - Token: []
+      summary: Get movie details by ID
+      tags:
+      - movie
+  /movie/genres:
+    get:
+      description: Get a list of all available movie genres
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Genres retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Something went wrong
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - Token: []
+      summary: Get all genres
+      tags:
+      - movie
+  /movie/now-playing-movies:
+    get:
+      description: Get a paginated list of currently playing movies
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Now playing movies retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PagedMoviesResponse'
+              type: object
+        "500":
+          description: Something went wrong
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - Token: []
+      summary: Get now playing movies
+      tags:
+      - movie
+  /movie/upcoming-movies:
+    get:
+      description: Get a paginated list of upcoming movies
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Upcoming movies retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PagedMoviesResponse'
+              type: object
+        "500":
+          description: Something went wrong
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - Token: []
+      summary: Get upcoming movies
+      tags:
+      - movie
   /profile:
     get:
       description: Get current user profile
@@ -388,20 +798,129 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.User'
+            allOf:
+            - $ref: '#/definitions/dto.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserResponse'
+              type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/models.HTTPError'
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/models.HTTPError'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - Token: []
       summary: Get user profile
       tags:
       - profile
+  /transaction/:
+    post:
+      consumes:
+      - application/json
+      description: Create a new movie ticket transaction
+      parameters:
+      - description: Transaction details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Transaction created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TransactionResult'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - Token: []
+      summary: Create a new transaction
+      tags:
+      - transaction
+  /transaction/{code}:
+    get:
+      description: Get full details of a transaction using its unique code
+      parameters:
+      - description: Transaction Code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transaction retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TransactionListResponse'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Transaction not found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - Token: []
+      summary: Get transaction by code
+      tags:
+      - transaction
+  /transaction/payment:
+    post:
+      consumes:
+      - application/json
+      description: Process a payment for a transaction
+      parameters:
+      - description: Payment details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ProcessPaymentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment processed successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TransactionResult'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - Token: []
+      summary: Process payment
+      tags:
+      - transaction
 securityDefinitions:
   Token:
     in: header

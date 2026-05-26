@@ -171,6 +171,17 @@ func (c *MovieController) DeleteMovie(ctx *gin.Context) {
 	utils.SendSuccess(ctx, http.StatusOK, "Movie deleted successfully", nil)
 }
 
+// Get Movies godoc
+// @Summary Get all movies
+// @Description Get a paginated list of all movies
+// @Tags movie
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Items per page" default(20)
+// @Security Token
+// @Success 200 {object} dto.SuccessResponse{data=dto.PagedMoviesResponse} "All movies retrieved successfully"
+// @Failure 500 {object} dto.ErrorResponse "Something went wrong"
+// @Router /movie/ [get]
 func (c *MovieController) GetMovies(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "20"))
@@ -196,6 +207,17 @@ func (c *MovieController) GetMovies(ctx *gin.Context) {
 	utils.SendSuccess(ctx, http.StatusOK, "all movies retrieved successfully", response)
 }
 
+// Get Now Playing Movies godoc
+// @Summary Get now playing movies
+// @Description Get a paginated list of currently playing movies
+// @Tags movie
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Items per page" default(20)
+// @Security Token
+// @Success 200 {object} dto.SuccessResponse{data=dto.PagedMoviesResponse} "Now playing movies retrieved successfully"
+// @Failure 500 {object} dto.ErrorResponse "Something went wrong"
+// @Router /movie/now-playing-movies [get]
 func (c *MovieController) GetMoviesNowPlaying(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "20"))
@@ -221,6 +243,17 @@ func (c *MovieController) GetMoviesNowPlaying(ctx *gin.Context) {
 	utils.SendSuccess(ctx, http.StatusOK, "now playing movies retrieved successfully", response)
 }
 
+// Get Upcoming Movies godoc
+// @Summary Get upcoming movies
+// @Description Get a paginated list of upcoming movies
+// @Tags movie
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Items per page" default(20)
+// @Security Token
+// @Success 200 {object} dto.SuccessResponse{data=dto.PagedMoviesResponse} "Upcoming movies retrieved successfully"
+// @Failure 500 {object} dto.ErrorResponse "Something went wrong"
+// @Router /movie/upcoming-movies [get]
 func (c *MovieController) GetMoviesUpcoming(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "20"))
@@ -246,6 +279,17 @@ func (c *MovieController) GetMoviesUpcoming(ctx *gin.Context) {
 	utils.SendSuccess(ctx, http.StatusOK, "upcoming movies retrieved successfully", response)
 }
 
+// Get Movie By ID godoc
+// @Summary Get movie details by ID
+// @Description Get complete details of a specific movie by its ID
+// @Tags movie
+// @Produce json
+// @Param id path integer true "Movie ID"
+// @Security Token
+// @Success 200 {object} dto.SuccessResponse{data=dto.MovieResponse} "Movie retrieved successfully"
+// @Failure 400 {object} dto.ErrorResponse "Invalid movie ID"
+// @Failure 404 {object} dto.ErrorResponse "Movie not found"
+// @Router /movie/{id} [get]
 func (c *MovieController) GetMovieByID(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	movieID, err := strconv.Atoi(idParam)
@@ -263,6 +307,15 @@ func (c *MovieController) GetMovieByID(ctx *gin.Context) {
 	utils.SendSuccess(ctx, http.StatusOK, "Movie retrieved successfully", movie)
 }
 
+// Get Genres godoc
+// @Summary Get all genres
+// @Description Get a list of all available movie genres
+// @Tags movie
+// @Produce json
+// @Security Token
+// @Success 200 {object} dto.SuccessResponse{data=[]string} "Genres retrieved successfully"
+// @Failure 500 {object} dto.ErrorResponse "Something went wrong"
+// @Router /movie/genres [get]
 func (c *MovieController) GetGenres(ctx *gin.Context) {
 	genres, err := c.movieService.GetGenres(ctx.Request.Context())
 	if err != nil {

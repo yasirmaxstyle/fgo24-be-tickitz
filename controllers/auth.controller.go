@@ -23,7 +23,7 @@ func NewAuthController(authService services.AuthService) *AuthController {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body models.RegisterRequest true "Registration request"
+// @Param request body dto.RegisterRequest true "Registration request"
 // @Success 201 {object} dto.SuccessResponse
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
@@ -55,7 +55,7 @@ func (c *AuthController) Register(ctx *gin.Context) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body models.LoginRequest true "Login request"
+// @Param request body dto.LoginRequest true "Login request"
 // @Success 200 {object} dto.AuthResponse
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 401 {object} dto.ErrorResponse
@@ -82,7 +82,7 @@ func (c *AuthController) Login(ctx *gin.Context) {
 // @Tags profile
 // @Produce json
 // @Security Token
-// @Success 200 {object} models.Profile
+// @Success 200 {object} dto.SuccessResponse{data=dto.UserResponse}
 // @Failure 401 {object} dto.ErrorResponse
 // @Failure 404 {object} dto.ErrorResponse
 // @Router /profile [get]
@@ -108,7 +108,7 @@ func (c *AuthController) GetProfile(ctx *gin.Context) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body models.RefreshTokenRequest true "Logout request"
+// @Param request body dto.LogoutRequest true "Logout request"
 // @Security Token
 // @Success 200 {object} dto.SuccessResponse
 // @Failure 400 {object} dto.ErrorResponse
@@ -134,7 +134,7 @@ func (c *AuthController) Logout(ctx *gin.Context) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body models.PasswordResetRequest true "Forgot password request"
+// @Param request body dto.PasswordResetRequest true "Forgot password request"
 // @Success 200 {object} dto.SuccessResponse
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 401 {object} dto.ErrorResponse
@@ -162,7 +162,7 @@ func (c *AuthController) ForgotPassword(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param token query string true "token request"
-// @Param request body models.ResetPasswordRequest true "Reset password request"
+// @Param request body dto.ResetPasswordRequest true "Reset password request"
 // @Success 200 {object} dto.SuccessResponse
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 401 {object} dto.ErrorResponse
