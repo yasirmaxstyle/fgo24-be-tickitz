@@ -49,6 +49,11 @@ func fetchJSON(url string, target interface{}) error {
 		return err
 	}
 	defer resp.Body.Close()
+	
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("API request failed with status: %d", resp.StatusCode)
+	}
+
 	return json.NewDecoder(resp.Body).Decode(target)
 }
 
